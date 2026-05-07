@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.log
+
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+
+.idea/
+*.iml
