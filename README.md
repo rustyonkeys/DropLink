@@ -45,6 +45,13 @@ powershell -ExecutionPolicy Bypass -File .\setup_windows.ps1
 
 Windows Firewall may ask for local network access. Allow private network access so phones on the same WiFi can discover and transfer files.
 
+If Android can see the PC but stays on "Waiting for receiver" when sending to Windows, open PowerShell as Administrator and run:
+
+```powershell
+cd droplink_windows
+powershell -ExecutionPolicy Bypass -File .\allow_firewall.ps1
+```
+
 ### Flutter App
 
 ```powershell

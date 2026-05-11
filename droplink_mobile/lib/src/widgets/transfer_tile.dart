@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/transfer_item.dart';
+import '../state/app_state.dart';
 
 class TransferTile extends StatelessWidget {
   const TransferTile({super.key, required this.item});
@@ -14,10 +16,11 @@ class TransferTile extends StatelessWidget {
       TransferStatus.waiting => 'Waiting',
       TransferStatus.offering => 'Waiting for receiver',
       TransferStatus.transferring => _progressText(),
-      TransferStatus.completed => 'Completed',
+      TransferStatus.completed => item.savedPath == null ? 'Completed' : 'Saved to ${item.savedPath}',
       TransferStatus.failed => item.error ?? 'Failed',
       TransferStatus.cancelled => 'Cancelled',
     };
+    final canOpen = item.status == TransferStatus.completed && item.savedPath != null;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -40,10 +43,18 @@ class TransferTile extends StatelessWidget {
                 const SizedBox(height: 6),
                 LinearProgressIndicator(value: item.status == TransferStatus.completed ? 1 : item.progress),
                 const SizedBox(height: 6),
-                Text(statusText, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(statusText, maxLines: 2, overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
+          if (canOpen) ...[
+            const SizedBox(width: 8),
+            IconButton.filledTonal(
+              onPressed: () => context.read<AppState>().openTransfer(item),
+              icon: const Icon(Icons.open_in_new_rounded),
+              tooltip: 'Open file',
+            ),
+          ],
         ],
       ),
     );

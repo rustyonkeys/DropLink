@@ -3,11 +3,22 @@ __pycache__/
 .venv/
 venv/
 *.log
+.env
+.env.*
 
 .dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
+.packages
 build/
+coverage/
+*.apk
+*.aab
 
 .idea/
 *.iml
+
+droplink_windows/build/
+droplink_windows/dist/
+droplink_windows/dist.zip
+droplink_windows/*.spec

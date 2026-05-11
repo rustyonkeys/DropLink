@@ -8,7 +8,7 @@ import 'device_identity.dart';
 typedef DeviceMap = Map<String, NearbyDevice>;
 
 class DiscoveryService {
-  DiscoveryService(this.identity);
+  DiscoveryService(this.identity, {required this.httpPortProvider});
 
   static const int discoveryPort = 45870;
   static const int httpPort = 45872;
@@ -16,6 +16,7 @@ class DiscoveryService {
   static const Duration deviceTimeout = Duration(seconds: 8);
 
   final DeviceIdentity identity;
+  final int Function() httpPortProvider;
   final _devices = <String, NearbyDevice>{};
   final _controller = StreamController<DeviceMap>.broadcast();
 
@@ -48,7 +49,7 @@ class DiscoveryService {
       'name': identity.name,
       'platform': identity.platform,
       'host': _host,
-      'port': httpPort,
+      'port': httpPortProvider(),
       'ts': DateTime.now().millisecondsSinceEpoch,
     });
     _announceSocket?.send(utf8.encode(payload), InternetAddress('255.255.255.255'), discoveryPort);
