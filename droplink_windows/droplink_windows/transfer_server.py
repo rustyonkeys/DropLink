@@ -44,6 +44,7 @@ class TransferServer:
         self.on_offer = on_offer
         self.on_progress = on_progress
         self.tokens: Dict[str, PendingToken] = {}
+        self.offers: Dict[str, TransferOffer] = {}
         self.app = FastAPI(title="DropLink Windows")
         self._configure_routes()
 
@@ -77,6 +78,7 @@ class TransferServer:
                 transfer_id=offer.transfer_id,
                 expires_at=time.time() + TOKEN_TTL_SECONDS,
             )
+            self.offers[offer.transfer_id] = offer
             return OfferResponse(accepted=True, token=token)
 
         @self.app.post("/api/transfers/{transfer_id}/upload")
@@ -87,6 +89,8 @@ class TransferServer:
         ) -> Dict[str, Union[str, int]]:
             self._authorize(transfer_id, authorization)
             destination = self.storage.safe_destination(file.filename or transfer_id)
+            offer = self.offers.get(transfer_id)
+            total = offer.size if offer else 0
             received = 0
 
             with destination.open("wb") as output:
@@ -97,9 +101,12 @@ class TransferServer:
                     output.write(chunk)
                     received += len(chunk)
                     if self.on_progress:
-                        self.on_progress(transfer_id, received, 0)
+                        self.on_progress(transfer_id, received, total)
 
             self.tokens.pop(transfer_id, None)
+            self.offers.pop(transfer_id, None)
+            if self.on_progress:
+                self.on_progress(transfer_id, received, total)
             return {"status": "saved", "path": str(destination), "bytes": received}
 
     def _authorize(self, transfer_id: str, authorization: Optional[str]) -> None:

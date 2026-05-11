@@ -9,7 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import '../models/transfer_offer.dart';
 
 typedef OfferHandler = Future<bool> Function(TransferOffer offer);
-typedef ReceiveProgressHandler = void Function(String transferId, int receivedBytes);
+typedef ReceiveProgressHandler = void Function(String transferId, int receivedBytes, {String? savedPath});
 
 class ReceiverServer {
   ReceiverServer({
@@ -128,10 +128,28 @@ class ReceiverServer {
     }
 
     _tokens.remove(transferId);
+    onProgress(transferId, received, savedPath: savedPath);
     await _json(request, {'status': 'saved', 'path': savedPath, 'bytes': received});
   }
 
   Future<Directory> _downloadDirectory() async {
+    if (Platform.isAndroid) {
+      for (final path in const [
+        '/storage/emulated/0/Download/DropLink',
+        '/sdcard/Download/DropLink',
+      ]) {
+        try {
+          final dir = Directory(path);
+          if (!await dir.exists()) {
+            await dir.create(recursive: true);
+          }
+          return dir;
+        } catch (_) {
+          // Android can block public Downloads writes on newer versions.
+        }
+      }
+    }
+
     Directory? base;
     try {
       base = await getDownloadsDirectory();

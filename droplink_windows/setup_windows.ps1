@@ -33,3 +33,6 @@ Write-Host "Checking imports..."
 Write-Host ""
 Write-Host "Setup complete. Start DropLink with:" -ForegroundColor Green
 Write-Host "  .\.venv\Scripts\python.exe -m droplink_windows.main"
+Write-Host ""
+Write-Host "If your phone can see this PC but cannot send files to it, run this from an Administrator PowerShell:"
+Write-Host "  powershell -ExecutionPolicy Bypass -File .\allow_firewall.ps1"

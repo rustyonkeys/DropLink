@@ -17,6 +17,31 @@ powershell -ExecutionPolicy Bypass -File .\setup_windows.ps1
 .\.venv\Scripts\python.exe -m droplink_windows.main
 ```
 
+## Build a One-Click Windows App
+
+To create a Windows app your friend can run without cloning the repo or installing Python packages:
+
+```powershell
+cd droplink_windows
+powershell -ExecutionPolicy Bypass -File .\build_windows_app.ps1
+```
+
+The build output is:
+
+```text
+droplink_windows/dist/DropLink/DropLink.exe
+```
+
+Share the whole `dist/DropLink` folder, not only the `.exe`, because the folder contains the bundled Python runtime and dependencies.
+
+Your friend can then double-click:
+
+```text
+DropLink.exe
+```
+
+Windows Defender or SmartScreen may warn because this is an unsigned personal app. Choose "More info" and "Run anyway", or sign the executable later if you distribute it more widely.
+
 Manual:
 
 ```powershell
@@ -42,6 +67,7 @@ If discovery does not work:
 
 - Confirm Windows and Android are on the same WiFi.
 - Allow Python through Windows Firewall on private networks.
+- If Android sees the PC but cannot send to it, run `droplink_windows\allow_firewall.ps1` from an Administrator PowerShell window to allow DropLink's inbound TCP transfer port.
 - Disable AP/client isolation in router settings.
 - Try another WiFi network or mobile hotspot.
 

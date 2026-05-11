@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../models/nearby_device.dart';
 import '../state/app_state.dart';
+import 'history_screen.dart';
 import '../widgets/device_card.dart';
 import '../widgets/pending_offer_sheet.dart';
 import '../widgets/scanning_pulse.dart';
@@ -55,7 +56,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     IconButton.filledTonal(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(builder: (_) => const HistoryScreen()),
+                        );
+                      },
                       icon: const Icon(Icons.history_rounded),
                       tooltip: 'Transfer history',
                     ),

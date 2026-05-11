@@ -13,7 +13,14 @@ import 'device_identity.dart';
 typedef TransferChanged = void Function(TransferItem item);
 
 class FileTransferService {
-  FileTransferService(this.identity) : _dio = Dio();
+  FileTransferService(this.identity)
+      : _dio = Dio(
+          BaseOptions(
+            connectTimeout: const Duration(seconds: 8),
+            sendTimeout: const Duration(seconds: 30),
+            receiveTimeout: const Duration(seconds: 75),
+          ),
+        );
 
   final DeviceIdentity identity;
   final Dio _dio;
@@ -52,7 +59,6 @@ class FileTransferService {
           'size': length,
           'mime_type': mimeType,
         },
-        options: Options(sendTimeout: const Duration(seconds: 30), receiveTimeout: const Duration(seconds: 30)),
       );
 
       final data = offer.data ?? {};
@@ -86,8 +92,27 @@ class FileTransferService {
       );
 
       onChanged(item.copyWith(sentBytes: length, status: TransferStatus.completed));
+    } on DioException catch (error) {
+      onChanged(item.copyWith(status: TransferStatus.failed, error: _friendlyDioError(error, device)));
     } catch (error) {
       onChanged(item.copyWith(status: TransferStatus.failed, error: error.toString()));
     }
+  }
+
+  String _friendlyDioError(DioException error, NearbyDevice device) {
+    if (error.type == DioExceptionType.connectionTimeout) {
+      return 'Cannot reach ${device.name}. Allow DropLink/Python through Windows Firewall on Private networks.';
+    }
+    if (error.type == DioExceptionType.receiveTimeout) {
+      return '${device.name} did not respond. Check the accept dialog on the PC and try again.';
+    }
+    if (error.type == DioExceptionType.connectionError) {
+      return 'Connection failed to ${device.name}. Make sure both devices are on the same WiFi and Windows Firewall allows port ${device.port}.';
+    }
+    final status = error.response?.statusCode;
+    if (status != null) {
+      return 'Transfer failed: receiver returned HTTP $status.';
+    }
+    return error.message ?? error.toString();
   }
 }

@@ -17,6 +17,7 @@ class DiscoveryService:
         self.config = config
         self.on_devices_changed = on_devices_changed
         self.devices: Dict[str, Device] = {}
+        self._lock = threading.Lock()
         self._stop = threading.Event()
         self._threads: List[threading.Thread] = []
 
@@ -86,19 +87,27 @@ class DiscoveryService:
         if not device_id or not port:
             return
 
-        self.devices[device_id] = Device(device_id, name, platform, host, port)
-        self._notify()
+        with self._lock:
+            self.devices[device_id] = Device(device_id, name, platform, host, port)
+            devices = dict(self.devices)
+        self._notify(devices)
 
     def _cleanup_loop(self) -> None:
         while not self._stop.is_set():
             now = time.time()
-            stale = [device_id for device_id, device in self.devices.items() if now - device.last_seen > DEVICE_TIMEOUT_SECONDS]
-            for device_id in stale:
-                self.devices.pop(device_id, None)
+            with self._lock:
+                stale = [
+                    device_id
+                    for device_id, device in self.devices.items()
+                    if now - device.last_seen > DEVICE_TIMEOUT_SECONDS
+                ]
+                for device_id in stale:
+                    self.devices.pop(device_id, None)
+                devices = dict(self.devices)
             if stale:
-                self._notify()
+                self._notify(devices)
             self._stop.wait(2)
 
-    def _notify(self) -> None:
+    def _notify(self, devices: Dict[str, Device]) -> None:
         if self.on_devices_changed:
-            self.on_devices_changed(dict(self.devices))
+            self.on_devices_changed(devices)

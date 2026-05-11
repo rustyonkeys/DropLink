@@ -9,6 +9,7 @@ class TransferItem {
     required this.speedBytesPerSecond,
     required this.status,
     this.error,
+    this.savedPath,
   });
 
   final String id;
@@ -18,6 +19,7 @@ class TransferItem {
   final double speedBytesPerSecond;
   final TransferStatus status;
   final String? error;
+  final String? savedPath;
 
   double get progress => totalBytes == 0 ? 0 : sentBytes / totalBytes;
 
@@ -31,6 +33,7 @@ class TransferItem {
     double? speedBytesPerSecond,
     TransferStatus? status,
     String? error,
+    String? savedPath,
   }) {
     return TransferItem(
       id: id,
@@ -40,6 +43,7 @@ class TransferItem {
       speedBytesPerSecond: speedBytesPerSecond ?? this.speedBytesPerSecond,
       status: status ?? this.status,
       error: error ?? this.error,
+      savedPath: savedPath ?? this.savedPath,
     );
   }
 }
